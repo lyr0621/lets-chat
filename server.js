@@ -1,9 +1,27 @@
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
-const io = require("socket.io")(server);
-var connected_users = [];
-var messages = [];
+const io = require("socket.io")(server);    //import some modules for http server and socket io
+
+var connected_users = [];      //store connected users
+var messages = [];        //store all the messages
+
+const mysql = require('mysql');         //import mysql module
+
+var connection = mysql.createConnection({
+    host: "localhost",
+    user: "www",
+    password:"www",
+    database: "www",
+});          //connect to database
+connection.connect();
+console.log("<--Connected to database, loading messages...-->");
+connection.query('SELECT * FROM chat_log', function (error, results, fields) {
+    if (error) throw error;
+    messages = results;
+    console.log("<--loaded " + messages.length + " message(s) from database-->");
+});
+
 
 app.get('/',(req, res) => {
     res.sendFile(__dirname + '/chat.html');
@@ -37,13 +55,14 @@ io.on("connection", socket => {
             return
         }
         console.log(msg[1] + " says: "+ msg[0]);
-        var date = new Date();
-        var time = date.getTime();
-        msg.push(time);
-        msg.push(date.toLocaleDateString() + " " + date.toLocaleTimeString());
-        //console.log(date.toLocaleDateString() + " " + date.toLocaleTimeString());
-        messages.push(msg);
-        console.log(messages);
+        connection.query("INSERT INTO `chat_log` (`user_name`, `message`) VALUES ('" + msg[1]+"', '"+msg[0]+"');", function (error, results, fields) {
+            if (error) throw error;
+            console.log("<--message updated to databases-->");
+        });
+        connection.query('SELECT * FROM chat_log', function (error, results, fields) {
+            if (error) throw error;
+            messages = results;
+        });
         io.emit('output', {
             messages: messages,
         });

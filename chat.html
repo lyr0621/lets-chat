@@ -157,6 +157,7 @@
             var messages_sorted = [];
             console.log(data.messages);
             data.messages.forEach(message => {
+                //create all the elements for a chat card
                 var message_card = document.createElement('div');
                 var message_row = document.createElement('div');
                 message_card.setAttribute('class', 'chat_col_card');
@@ -172,10 +173,12 @@
                 message_card.appendChild(messageLine);
                 var message_hr = document.createElement('hr');
                 //message_card.appendChild(message_hr);
-                messageLine.textContent = message[0];
-                sender_name.textContent = message[1];
-                send_date.textContent = message[3];
-                console.log(message_card);
+
+                //add the message to the card
+                messageLine.textContent = message.message;
+                sender_name.textContent = message.user_name;
+                send_date.textContent = message.send_time;
+                //console.log(message_card);
                 messages.insertBefore(message_card, messages.firstElementChild);
             });
         });
